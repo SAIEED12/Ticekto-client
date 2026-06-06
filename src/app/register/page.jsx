@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
 import { email } from "better-auth";
 import toast from "react-hot-toast";
+import { uploadImage } from "@/utills/uploadImage";
 
 export default function RegisterPage() {
   const {
@@ -32,45 +33,25 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm();
 
-
   const onSubmit = async (data) => {
-
     // Upload image to imgbb
-      const imageFile = data.image[0];
-      console.log("image", imageFile)
+    const imageFile = data.image[0];
+    const imageUrl = await uploadImage(imageFile);
+    console.log(imageUrl);
 
-      const imageData = new FormData();
-      imageData.append("image", imageFile);
-
-      const imageRes = await fetch(
-        `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
-        {
-          method: "POST",
-          body: imageData,
-        }
-      );
-
-      const imageResult = await imageRes.json();
-      console.log(imageResult)
-
-      if (!imageResult.success) {
-        toast.error("Image upload failed");
-      }
-
-      const imageUrl = imageResult.data.url;
-    
-    console.log(data)
     const { data: signUpData, error: signUpError } =
       await authClient.signUp.email({
-        email:data.email,
+        email: data.email,
         password: data.password,
-        name:data.name,
+        name: data.name,
         image: imageUrl,
-        role: data.role
+        role: data.role,
       });
-    console.log(signUpData, signUpError);
-    if(signUpError){
-        toast.error("Signup Failed!")
+
+    if (signUpError) {
+      toast.error("Signup Failed!");
+    } else {
+      redirect("/");
     }
   };
 
@@ -120,7 +101,7 @@ export default function RegisterPage() {
               {...register("image", { required: "Image is required" })}
               type="file"
               accept="image/*"
-            //   onChange={handleImageUpload}
+              //   onChange={handleImageUpload}
               id="image"
               placeholder="https://example.com/avatar.jpg"
               labelPlacement="outside"
@@ -135,8 +116,11 @@ export default function RegisterPage() {
             <Input
               {...register("password", {
                 required: "Password is required",
-                maxLength: 12,
-                minLength: 6,
+                // pattern: {
+                //     value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/,
+                //     message:
+                //         "Password must be at least 6 characters and contain at least one uppercase letter, one lowercase letter, and one number",
+                // },
               })}
               id="password"
               placeholder="••••••••"
