@@ -23,6 +23,7 @@ import Logo from "@/components/Logo";
 import { useForm } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
 import { email } from "better-auth";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const {
@@ -30,12 +31,47 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+
   const onSubmit = async (data) => {
+
+    // Upload image to imgbb
+      const imageFile = data.image[0];
+      console.log("image", imageFile)
+
+      const imageData = new FormData();
+      imageData.append("image", imageFile);
+
+      const imageRes = await fetch(
+        `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+        {
+          method: "POST",
+          body: imageData,
+        }
+      );
+
+      const imageResult = await imageRes.json();
+      console.log(imageResult)
+
+      if (!imageResult.success) {
+        toast.error("Image upload failed");
+      }
+
+      const imageUrl = imageResult.data.url;
+    
+    console.log(data)
     const { data: signUpData, error: signUpError } =
       await authClient.signUp.email({
-        ...data,
+        email:data.email,
+        password: data.password,
+        name:data.name,
+        image: imageUrl,
+        role: data.role
       });
     console.log(signUpData, signUpError);
+    if(signUpError){
+        toast.error("Signup Failed!")
+    }
   };
 
   return (
@@ -79,8 +115,12 @@ export default function RegisterPage() {
               <p className="text-red-500">{errors.email.message}</p>
             )}
             <Label htmlFor="image">Profile Image URL</Label>
+
             <Input
               {...register("image", { required: "Image is required" })}
+              type="file"
+              accept="image/*"
+            //   onChange={handleImageUpload}
               id="image"
               placeholder="https://example.com/avatar.jpg"
               labelPlacement="outside"
@@ -134,7 +174,7 @@ export default function RegisterPage() {
                                     <ListBoxItem value={organizer} key="organizer" id="organizer" textValue="Organizer" className="p-2 text-white hover:bg-pink-500/20 rounded-lg cursor-pointer">Organizer (Create & Host Events)</ListBoxItem>
                                 </ListBox>
                             </SelectPopover>
-                        </Select> */}
+              </Select> */}
 
               <select
                 id="role"
