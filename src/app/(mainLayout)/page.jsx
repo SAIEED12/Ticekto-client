@@ -10,14 +10,12 @@ export default async function HomePage() {
     totalAttendees: 4000,
     totalOrgs: 10
   }
-
   return (
     <div>
-      <Hero/>
-      <WhyChoose/>
-      <Statistics stats={stats}/>
-      <Testimonials/>
+      <Hero />
+      <WhyChoose />
+      <Statistics stats={stats} />
+      <Testimonials />
     </div>
   );
 }
-

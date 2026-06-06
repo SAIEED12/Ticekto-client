@@ -25,6 +25,7 @@ import { authClient } from "@/lib/auth-client";
 import { email } from "better-auth";
 import toast from "react-hot-toast";
 import { uploadImage } from "@/utills/uploadImage";
+import { redirect } from "next/navigation";
 
 export default function RegisterPage() {
   const {
@@ -49,7 +50,7 @@ export default function RegisterPage() {
       });
 
     if (signUpError) {
-      toast.error("Signup Failed!");
+      toast.error(signUpError.message);
     } else {
       redirect("/");
     }
